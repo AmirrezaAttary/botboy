@@ -1,18 +1,16 @@
 import telebot
 import yt_dlp
+import browser_cookie3
 import os
 
 # 🔑 توکن ربات را اینجا قرار دهید
 TOKEN = '7622125771:AAHQjUyLIXg3qWIVxzbTcwf4cNqCuiOu37A'
 
-# 📥 مسیر فایل کوکی
-COOKIE_FILE = 'cookies.txt'
-
 # ⚙️ پیکربندی yt-dlp برای دانلود ویدئو
 ydl_opts = {
     'format': 'best',
     'outtmpl': '%(title)s.%(ext)s',
-    'cookiefile': COOKIE_FILE  # استفاده از کوکی برای دور زدن محدودیت‌ها
+    'cookies_from_browser': ('chrome',)  # استفاده از کوکی‌های مرورگر (کروم)
 }
 
 # 🎯 ایجاد ربات
