@@ -1,56 +1,62 @@
 import telebot
+import yt_dlp
 import os
-from yt_dlp import YoutubeDL
 
-# توکن ربات را اینجا قرار دهید
-API_TOKEN = '7622125771:AAHQjUyLIXg3qWIVxzbTcwf4cNqCuiOu37A'
+# 🔑 توکن ربات را اینجا قرار دهید
+TOKEN = '7622125771:AAHQjUyLIXg3qWIVxzbTcwf4cNqCuiOu37A'
 
-bot = telebot.TeleBot(API_TOKEN)
+# 📥 مسیر فایل کوکی
+COOKIE_FILE = 'cookies.txt'
 
-# تنظیمات yt-dlp برای دانلود ویدئو
+# ⚙️ پیکربندی yt-dlp برای دانلود ویدئو
 ydl_opts = {
     'format': 'best',
-    'outtmpl': '%(title)s.%(ext)s',  # ذخیره فایل با نام و فرمت اصلی
+    'outtmpl': '%(title)s.%(ext)s',
+    'cookiefile': COOKIE_FILE  # استفاده از کوکی برای دور زدن محدودیت‌ها
 }
 
-# پیام خوش‌آمدگویی و توضیحات دستورات
-@bot.message_handler(commands=['start'])
+# 🎯 ایجاد ربات
+bot = telebot.TeleBot(TOKEN)
+
+# 💬 پیام شروع
+@bot.message_handler(commands=['start', 'help'])
 def send_welcome(message):
     welcome_text = (
-        "سلام! 👋\n"
-        "من یک ربات دانلود ویدئو از یوتیوب هستم. 🎥\n\n"
-        "🔗 کافیست لینک ویدئوی یوتیوب را ارسال کنید تا من آن را برای شما دانلود کنم.\n"
-        "📥 ویدئو به صورت پاسخ به پیام شما ارسال خواهد شد."
+        "سلام! 👋\n\n"
+        "این ربات می‌تواند ویدئوهای یوتیوب را برای شما دانلود کند.\n"
+        "📌 کافیست لینک ویدئو را ارسال کنید.\n\n"
+        "دستورات موجود:\n"
+        "/start - شروع به کار ربات\n"
+        "/help - راهنما"
     )
-    bot.send_message(message.chat.id, welcome_text)
+    bot.reply_to(message, welcome_text)
 
-# پردازش لینک یوتیوب
+# 📺 دانلود ویدئو از یوتیوب
 @bot.message_handler(func=lambda message: 'youtube.com' in message.text or 'youtu.be' in message.text)
 def download_video(message):
     url = message.text
-    bot.reply_to(message, "در حال دانلود ویدئو... ⏳")
-    
+    bot.reply_to(message, "🔄 در حال دانلود ویدئو... لطفاً صبور باشید.")
+
     try:
-        with YoutubeDL(ydl_opts) as ydl:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=True)
-            video_title = info.get('title', 'video')
-            file_ext = info.get('ext', 'mp4')
-            filename = f"{video_title}.{file_ext}"
-            
-        # ارسال ویدئو در حالت reply
+            filename = ydl.prepare_filename(info)
+
+        # آپلود ویدئو به عنوان پاسخ به پیام لینک
         with open(filename, 'rb') as video:
             bot.send_video(
                 message.chat.id,
                 video,
-                caption=f"🎬 {video_title}",
+                caption=f"🎬 {info.get('title', 'ویدئو')}",
                 reply_to_message_id=message.message_id
             )
-        
-        # حذف فایل بعد از ارسال
+
+        # حذف فایل پس از ارسال
         os.remove(filename)
-        
+
     except Exception as e:
         bot.reply_to(message, f"❌ خطایی رخ داد: {str(e)}")
 
-# شروع ربات
-bot.infinity_polling()
+# 🚀 اجرای ربات
+if __name__ == "__main__":
+    bot.infinity_polling()
