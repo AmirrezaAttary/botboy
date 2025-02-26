@@ -1,4 +1,1 @@
 pyTelegramBotAPI
-yt-dlp
-browser_cookie3
-Pillow
