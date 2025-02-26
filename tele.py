@@ -20,17 +20,23 @@ def handle_join_request(message: ChatJoinRequest):
     user = message.from_user
     bot.approve_chat_join_request(message.chat.id, user.id)
     bot.send_message(message.chat.id, f"""خوش آمدید, {user.first_name}!
-قوانین گروه""")
+قوانین گروه 
+آداب معاشرت داشته باشید.""")
 
 
 # PIN
-bot.message_handler(commands='pin')
-def pin_message_handeler(message):
-    bot.send_message(message.chat.id,'پیام را برای پین کردن به من بده')
-    bot.register_next_step_handler(message,message_pinner)
+@bot.message_handler(commands=['pin'])
+def pin_message(message):
+    # پیام باید به پیامی که باید پین شود ریپلای شده باشد
+    if message.reply_to_message:
+        try:
+            bot.pin_chat_message(message.chat.id, message.reply_to_message.message_id)
+            bot.send_message(message.chat.id, "Message pinned successfully!")
+        except Exception as e:
+            bot.send_message(message.chat.id, f"Failed to pin message: {e}")
+    else:
+        bot.send_message(message.chat.id, "Please reply to the message you want to pin.")
 
-def message_pinner(message):
-    bot.pin_chat_message(message.chat.id,message.message_id)
 
 
 
