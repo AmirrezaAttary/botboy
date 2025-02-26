@@ -19,11 +19,12 @@ def handle_new_chat_members(message: ChatMemberUpdated):
 def handle_join_request(message: ChatJoinRequest):
     user = message.from_user
     bot.approve_chat_join_request(message.chat.id, user.id)
-    bot.send_message(message.chat.id, f"Welcome to the group, {user.first_name}!")
+    bot.send_message(message.chat.id, f"""خوش آمدید, {user.first_name}!
+قوانین گروه""")
 
 
 # PIN
-bot.message_handler(func=func_in_group,commands='pin')
+bot.message_handler(commands='pin')
 def pin_message_handeler(message):
     bot.send_message(message.chat.id,'پیام را برای پین کردن به من بده')
     bot.register_next_step_handler(message,message_pinner)
